@@ -12,13 +12,17 @@ select sName, GPA, decision from Student, Apply where student.sID = Apply.sID an
                                                   and  major = "CS" and cname = "Stanford";
 
 -- Combining 2 relations and removing duplicates
-select distinct College.cName from College, Apply where college.cName = Apply.cName and enrollment >20000 and
-                                       major = "CS";
+
+select distinct College.cName
+from College, Apply
+where College.cName = Apply.cName
+  and enrollment > 20000 and major = "CS";
 
 -- Combining 2 relations and sorted
 select Student.sID, sName, GPA, apply.cName, enrollment from Student, College, Apply
 where apply.sID = Student.sID and Apply.cName = College.cName
 order by GPA desc, enrollment;
+
 -- String matching on attribute values
 select sID, major from Apply where major like "%bio%";
 
@@ -52,8 +56,8 @@ order by Name;
 
 -- Set Operators (intersect)
 select sID from Apply where major = "CS"
-intersect
-select sID from Apply where major = "EE";
+intersect select sID from Apply where major = "EE";
+
 -- The same as above
 select distinct A1.sID
 from Apply A1, Apply A2
@@ -72,6 +76,7 @@ where A1.sID = A2.sID and A1.major = "CS" and A2.major <> "EE";
 select sID, sName
 from Student
 where sID in (select sID from Apply where major = "CS");
+
 -- The same
 select distinct Student.sID, sName
 from Student, Apply
@@ -81,6 +86,29 @@ where Student.sID = Apply.sID and major = "CS";
 select sName
 from Student
 where sID in (select sID from Apply where major = "CS");
+
+-- Subqueries in Where
+select cName
+from College C1
+where not exists (select *
+                  from College C2
+                  where C2.enrollment > C1.enrollment);
+
+-- Subqueries in Where
+select sName, GPA
+from Student C1
+where not exists (select *
+                  from Student C2
+                  where C2.GPA > C1.GPA);
+
+-- Subqueries in Where
+select sName, GPA
+from Student
+where GPA >= all (select GPA from Student);
+
+select cName
+from College S1
+where not enrollment <=ANY(select enrollment from college S2 where S1.cName <> S1.cName);
 
 -- Subqueries in Select and From
 select *
@@ -95,6 +123,21 @@ from Apply, Student
 where College.cName = Apply.cName
 and Apply.sID = Student.sID) as sName
 from College;
+-- It is not working because the subquery will return many names to colleges so
+-- and it should return one to pair with college
+
+-- Subqueries in Select and From
+select cName, state
+(select distinct GPA
+    from Apply, Student
+    where College.cName = Apply.cName
+    and Apply.sID = Student.sID
+    and GPA >= all (
+    select GPA
+    from Student, Apply
+    where Student.sId = Apply.sID
+    and Apply.cName = College.cName)) as GPA
+from college;
 
 -- Inner Join on condition
 select distinct sName, major
@@ -114,7 +157,7 @@ on Apply.cName = College.cName;
 
 -- Natural Join
 select distinct sID
-from student natural join Apply
+from student natural join Apply;
 
 -- Natural Join
 select sName, GPA
@@ -129,6 +172,7 @@ where S1.sID < S2.sID;
 -- Left | Right | Full Outer Join
 select sName, sID, cName, major
 from Student full outer join Apply using(sID);
+
 -- the same
 select sName, Student.sID, cName, major
 from Student, Apply
@@ -216,7 +260,7 @@ select sID, 0
 from Student
 where sID not in (select sID from Apply);
 
---Having clause
+-- Having clause
 select cName
 from Apply
 group by cName
@@ -227,29 +271,29 @@ select distinct cName
 from Apply A1
 where 5 >(select count(*) from Apply A2 where A2.cName = A1.cName);
 
---Having clause
+-- Having clause
 select major
 from Student, Apply
 where Student.sID = Apply.sID
 group by major
 having max(GPA) < (select avg(GPA) from Student);
 
---Data modification Statements / INSERT
+-- Data modification Statements / INSERT
 insert into College values ("Carnegie Mellon", "PA", 11500);
 
---Data modification Statements / INSERT
+-- Data modification Statements / INSERT
 insert into Apply
 select sID, "Carnegie Mellon", "CS", null
 from Student
 where sID not in (select sID from Apply);
 
---Data modification Statements / INSERT
+-- Data modification Statements / INSERT
 insert into Apply
 select sID, "Carnegie Mellon", "EE", "Y"
 from Student
 where sID in (select sID from Apply where major = "EE" and decision="N");
 
---Data modification Statements / DELETE
+-- Data modification Statements / DELETE
 delete from Apply
 where sID in
 (select sID
@@ -257,18 +301,18 @@ from Apply
 group by sID
 having count(distinct major) > 2);
 
---Data modification Statements / DELETE
+-- Data modification Statements / DELETE
 delete
 from College
 where cName not in (select cName from Apply where major = "CS");
 
---Data modification Statements / UPDATE
+-- Data modification Statements / UPDATE
 update Apply
 set decision = "Y", major = "economics"
 where cName = "Carnegie Mellon"
 and sID in (select sID from Student where GPA < 3.6);
 
---Data modification Statements / UPDATE
+-- Data modification Statements / UPDATE
 update Apply
 set major = "CSE"
 where major = "EE"
@@ -277,12 +321,13 @@ and sID in (select sID from Student
 (select GPA from Student
 where sID in (select sID from Apply where major = "EE")));
 
---Data modification Statements / UPDATE
+-- Data modification Statements / UPDATE
 update Student
 set GPA = (select max (GPA) from Student),
     sizeHS = (select min(sizeHS) from Student);
 
---Data modification Statements / UPDATE
+-- Data modification Statements / UPDATE
 update Apply
 set decision = "Y";
+
 
