@@ -3,25 +3,39 @@ select title
 from Movie
 where director = "Steven Spielberg";
 
---Find all years that have a movie that received a rating of 4 or 5,
+-- Find all years that have a movie that received a rating of 4 or 5,
 -- and sort them in increasing order.
 select distinct year
 from Rating, Movie
 where Movie.mID = rating.mID and stars in (4,5)
 order by year asc;
 
---Find the titles of all movies that have no ratings.
+select distinct year
+from Movie join Rating using (mid)
+where Rating.stars >= 4
+order by year asc;
+
+select distinct year
+from Movie natural join Rating
+where stars in (4, 5)
+order by year;
+
+-- Find the titles of all movies that have no ratings.
 select title
 from Movie
 where mID not in (select mID from Rating);
 
---Some reviewers didn't provide a date with their rating.
---Find the names of all reviewers who have ratings with a NULL value for the date.
+-- Some reviewers didn't provide a date with their rating.
+-- Find the names of all reviewers who have ratings with a NULL value for the date.
 select name
 from Reviewer, Rating
 where Reviewer.rID = rating.rID and ratingDate is null;
 
---Write a query to return the ratings data in a more readable format:
+select name
+from Rating join Reviewer on Rating.rID = Reviewer.rID
+where ratingDate is null;
+
+-- Write a query to return the ratings data in a more readable format:
 -- reviewer name, movie title, stars, and ratingDate.
 -- Also, sort the data, first by reviewer name, then by movie title, and lastly by number of stars.
 
@@ -29,6 +43,10 @@ select name, title, stars, ratingDate
 from Rating, Reviewer, Movie
 where Movie.mID = rating.mID and Reviewer.rId = Rating.rID
 order by name, title, stars;
+
+select Reviewer.name, movie.title, rating.stars, rating.ratingDate
+from (Reviewer join Rating using (rid)) join Movie using (mID)
+order by Reviewer.name, movie.title, rating.stars;
 
 select name, title, stars, ratingDate
 from Movie
@@ -46,7 +64,7 @@ FROM Movie
          INNER JOIN Reviewer USING(rId)
 ORDER BY name, title, stars;
 
---For all cases where the same reviewer rated the same movie twice and
+-- For all cases where the same reviewer rated the same movie twice and
 -- gave it a higher rating the second time, return the reviewer's name
 -- and the title of the movie.
 
@@ -57,7 +75,7 @@ inner join Rating R2 using (rID)
 inner join Reviewer using (rId)
 where R1.mID = r2.mID and R1.stars < R2.stars and R1.ratingDate < R2.ratingDate;
 
---For each movie that has at least one rating,
+-- For each movie that has at least one rating,
 -- find the highest number of stars that movie received.
 -- Return the movie title and number of stars. Sort by movie title.
 
@@ -67,7 +85,12 @@ where Movie.mID = Rating.mID
 group by Movie.mID
 order by title;
 
---For each movie, return the title and the 'rating spread',
+select title, max (stars)
+from movie join rating on movie.mID = rating.mID
+group by movie.title
+order by title;
+
+-- For each movie, return the title and the 'rating spread',
 -- that is, the difference between highest and lowest ratings given to that movie.
 -- Sort by rating spread from highest to lowest, then by movie title.
 
@@ -77,7 +100,7 @@ inner join Rating using (mID)
 group by Movie.mID
 order by sp desc, title;
 
---Find the difference between the average rating of movies released before 1980
+-- Find the difference between the average rating of movies released before 1980
 -- and the average rating of movies released after 1980.
 -- (Make sure to calculate the average rating for each movie,
 -- then the average of those averages for movies before 1980 and movies after.

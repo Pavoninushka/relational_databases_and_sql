@@ -14,7 +14,7 @@ INNER JOIN Likes on H1.Id = Likes.ID1
 INNER JOIN Highschooler H2 on H2.Id = Likes.ID2
 where (H1.grade - H2.grade) >= 2;
 
---For every pair of students who both like each other,
+-- For every pair of students who both like each other,
 -- return the name and grade of both students.
 -- Include each pair only once, with the two names in alphabetical order.
 select H1.name, H1.grade, H2.name, H2.grade
@@ -30,7 +30,7 @@ from Highschooler
 where Highschooler.ID not in (select Id1 from Likes union select ID2 from Likes)
 order by grade, name;
 
---For every situation where student A likes student B,
+-- For every situation where student A likes student B,
 -- but we have no information about whom B likes
 -- (that is, B does not appear as an ID1 in the Likes table), return A and B's names and grades.
 select H1.name , H1.grade, H2.name, H2.grade
@@ -39,7 +39,7 @@ inner join Likes on H1.id = Likes.Id1
 inner JOIN Highschooler H2 ON H2.ID = Likes.ID2
 where (H1.id = Likes.ID1 and H2.id = Likes.ID2) and H2.id not in (select  ID1 from Likes);
 
---Find names and grades of students who only have friends in the same grade.
+-- Find names and grades of students who only have friends in the same grade.
 -- Return the result sorted by grade, then by name within each grade.
 select name, grade
 from Highschooler H1
@@ -50,7 +50,7 @@ where ID not in (
 )
 ORDER BY grade, name;
 
---For each student A who likes a student B where the two are not friends,
+-- For each student A who likes a student B where the two are not friends,
 -- find if they have a friend C in common (who can introduce them!). For all such trios,
 -- return the name and grade of A, B, and C.
 
@@ -103,7 +103,7 @@ select avg(f)
 from (select count(Id2) as f
     from Friend);
 
---Find the number of students who are either friends
+-- Find the number of students who are either friends
 -- with Cassandra or are friends of friends of Cassandra.
 -- Do not count Cassandra, even though technically she is a friend of a friend.
 
@@ -111,7 +111,7 @@ select count(distinct f1.id1)
 from Friend f1, Friend f2, (select ID from Highschooler where name = 'Cassandra') as C
 where f1.id2 = C.ID or (f1.id1 <> c.id and f1.ID2 = f2.ID1 and f2.ID2 = C.ID);
 
---Find the name and grade of the student(s) with the greatest number of friends.
+-- Find the name and grade of the student(s) with the greatest number of friends.
 
 select name, grade
 from Highschooler
